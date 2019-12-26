@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:xml/xml.dart' as xml;
+import 'package:xml/xml.dart';
 import 'package:xml_rpc/client.dart' as xml_rpc;
 import 'package:xml_rpc/src/converter.dart';
 
 class XmlRpcServer {
-  final Map<String, Future<xml.XmlDocument> Function(List<dynamic>)> _bindings =
-      {};
+  final Map<String, Future<XmlDocument> Function(List<dynamic>)> _bindings = {};
   int _port;
   String _host;
   HttpServer _server;
@@ -15,16 +14,16 @@ class XmlRpcServer {
   String get host => _host;
 
   XmlRpcServer({InternetAddress host, int port}) {
-    _host = host.address;
-    _port = port;
+    _host = host?.address ?? InternetAddress.loopbackIPv4;
+    _port = port ?? 80;
   }
 
-  void bind(String methodName,
-      Future<xml.XmlDocument> Function(List<dynamic>) callback) {
+  void bind(
+      String methodName, Future<XmlDocument> Function(List<dynamic>) callback) {
     _bindings.putIfAbsent(methodName, () => callback);
   }
 
-  Future<xml.XmlDocument> _handleRequest(xml.XmlDocument document) async {
+  Future<XmlDocument> _handleRequest(XmlDocument document) async {
     var methodCall = document.findElements('methodCall').first;
     var methodName = methodCall.findElements('methodName').first.text;
     var method = _bindings.entries.firstWhere((x) => x.key == methodName).value;
@@ -42,9 +41,9 @@ class XmlRpcServer {
       //TODO: Jeśli nie zostały przekazane parametry
     }
 
-    return xml.XmlDocument({
-      xml.XmlProcessing('xml', 'version="1.0"'),
-      xml.XmlElement(xml.XmlName('methodResponse'), [], [])
+    return XmlDocument({
+      XmlProcessing('xml', 'version="1.0"'),
+      XmlElement(XmlName('methodResponse'), [], [])
     });
   }
 
@@ -54,7 +53,7 @@ class XmlRpcServer {
       var xmlRequests = [];
       await utf8.decoder
           .bind(request)
-          .forEach((x) => xmlRequests.add(xml.parse(x)));
+          .forEach((x) => xmlRequests.add(parse(x)));
 
       await xmlRequests.forEach((_) async {
         final response = await _handleRequest(xmlRequests.first)
@@ -66,19 +65,18 @@ class XmlRpcServer {
   }
 }
 
-xml.XmlDocument generateXmlResponse(List params, {List<Codec> encodeCodecs}) {
+XmlDocument generateXmlResponse(List params, {List<Codec> encodeCodecs}) {
   encodeCodecs = encodeCodecs ?? xml_rpc.standardCodecs;
   final methodCallChildren = [
-    xml.XmlElement(
-        xml.XmlName('params'),
+    XmlElement(
+        XmlName('params'),
         [],
-        params.map((p) => xml.XmlElement(xml.XmlName('param'), [], [
-              xml.XmlElement(
-                  xml.XmlName('value'), [], [encode(p, encodeCodecs)])
+        params.map((p) => XmlElement(XmlName('param'), [], [
+              XmlElement(XmlName('value'), [], [encode(p, encodeCodecs)])
             ])))
   ];
-  return xml.XmlDocument([
-    xml.XmlProcessing('xml', 'version="1.0"'),
-    xml.XmlElement(xml.XmlName('methodResponse'), [], methodCallChildren)
+  return XmlDocument([
+    XmlProcessing('xml', 'version="1.0"'),
+    XmlElement(XmlName('methodResponse'), [], methodCallChildren)
   ]);
 }
