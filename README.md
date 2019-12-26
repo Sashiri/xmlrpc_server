@@ -10,8 +10,13 @@ A simple usage example:
 ```dart
 import 'package:xmlrpc_server/xmlrpc_server.dart';
 
-main() {
-  var awesome = new Awesome();
+void main() {
+  var rpcserver = XmlRpcServer();
+  rpcserver.bind('hello_world', (params) async {
+    print(params);
+    return generateXmlResponse([1]);
+  });
+  rpcserver.startServer();
 }
 ```
 
@@ -19,4 +24,4 @@ main() {
 
 Please file feature requests and bugs at the [issue tracker][tracker].
 
-[tracker]: http://example.com/issues/replaceme
+[tracker]: https://github.com/Sashiri/xmlrpc_server/issues
