@@ -14,7 +14,7 @@ class XmlRpcServer {
   String get host => _host;
 
   XmlRpcServer({InternetAddress host, int port}) {
-    _host = host?.address ?? InternetAddress.loopbackIPv4;
+    _host = host?.address ?? InternetAddress.loopbackIPv4.address;
     _port = port ?? 80;
   }
 
