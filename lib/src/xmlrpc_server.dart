@@ -13,8 +13,8 @@ class XmlRpcServer {
   int get port => _port;
   String get host => _host;
 
-  XmlRpcServer({InternetAddress host, int port}) {
-    _host = host?.address ?? InternetAddress.loopbackIPv4.address;
+  XmlRpcServer({String host, int port}) {
+    _host = host ?? InternetAddress.loopbackIPv4.address;
     _port = port ?? 80;
   }
 
@@ -55,12 +55,12 @@ class XmlRpcServer {
           .bind(request)
           .forEach((x) => xmlRequests.add(parse(x)));
 
-      await xmlRequests.forEach((_) async {
+      await Future.forEach(xmlRequests, (_) async {
         final response = await _handleRequest(xmlRequests.first)
             .then((doc) => doc.toXmlString());
         request.response.write(response);
       });
-      return request.response.close();
+      await request.response.close();
     }
   }
 }
