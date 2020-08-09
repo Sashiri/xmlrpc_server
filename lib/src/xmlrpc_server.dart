@@ -66,8 +66,8 @@ class XmlRpcServer {
     }
   }
 
-  void stopServer() async {
-    await _server.close();
+  Future<void> stopServer() {
+    return _server.close();
   }
 }
 
