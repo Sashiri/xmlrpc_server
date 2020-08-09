@@ -65,6 +65,10 @@ class XmlRpcServer {
       await request.response.close();
     }
   }
+
+  Future<void> stopServer() {
+    return _server.close();
+  }
 }
 
 XmlDocument generateXmlResponse(List params, {List<Codec> encodeCodecs}) {
