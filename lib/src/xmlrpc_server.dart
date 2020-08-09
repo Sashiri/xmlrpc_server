@@ -58,6 +58,12 @@ class XmlRpcServer {
       await Future.forEach(xmlRequests, (_) async {
         final response = await _handleRequest(xmlRequests.first)
             .then((doc) => doc.toXmlString());
+        request.response.statusCode = HttpStatus.ok;
+        request.response.headers
+          ..host = host
+          ..date = DateTime.now().toUtc()
+          ..contentType = ContentType.parse('text/xml')
+          ..contentLength = response.length;
         request.response.write(response);
       });
       await request.response.close();
