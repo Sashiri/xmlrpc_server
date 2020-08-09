@@ -50,22 +50,18 @@ class XmlRpcServer {
   void startServer() async {
     _server = await HttpServer.bind(host, port, shared: true);
     await for (HttpRequest request in _server) {
-      var xmlRequests = [];
-      await utf8.decoder
-          .bind(request)
-          .forEach((x) => xmlRequests.add(parse(x)));
+      var xmlRequest =
+          await utf8.decoder.bind(request).join().then((value) => parse(value));
 
-      await Future.forEach(xmlRequests, (_) async {
-        final response = await _handleRequest(xmlRequests.first)
-            .then((doc) => doc.toXmlString());
-        request.response.statusCode = HttpStatus.ok;
-        request.response.headers
-          ..host = host
-          ..date = DateTime.now().toUtc()
-          ..contentType = ContentType.parse('text/xml')
-          ..contentLength = response.length;
-        request.response.write(response);
-      });
+      final response =
+          await _handleRequest(xmlRequest).then((doc) => doc.toXmlString());
+
+      request.response.statusCode = HttpStatus.ok;
+      request.response.headers
+        ..contentType = ContentType('text', 'xml')
+        ..contentLength = response.length;
+
+      request.response.write(response);
       await request.response.close();
     }
   }
